@@ -2,10 +2,12 @@
        :doc "A few simple utils to download Y! Finance data"}
   in.freegeek.yfinance
   (:require [clj-time.core :as time]
-            [clj-http.client :as client])
+            [clj-http.client :as client]
+            [clojure.data.csv :as csv])
   (:import java.net.URLEncoder))
 
 (def #^{:private true} +base-url+ "http://itable.finance.yahoo.com/table.csv?s=%s&g=d&a=%d&b=%d&c=%d&d=%d&e=%d&f=%d&g=%s&ignore=.csv")
+
 
 (defn- get-full-url
   "Construct the complete URL given the params"
@@ -39,6 +41,30 @@
         body
         response))))
 
+(defn- parse-day [header [x & xs]]
+  "takes a line from Yahoo! Finance CSV data and returns
+  a map where the keys are the column names"
+  (let [println header
+        names-adjusted
+        {"Date" :trading_date
+         "Open" :open
+         "High" :high
+         "Low" :low
+         "Close" :close
+         "Volume" :volume
+         "Adj Close" :adjusted_close}
+        header-adjusted (map names-adjusted header)]
+    (zipmap header-adjusted
+            (cons x (map read-string xs)))))
+
+(defn- parse-response [resp]
+  "takes the response from a yfinance query and parses it to a list"
+  (if (= (:status resp) 404)
+    404
+    (let [[header & records] (csv/read-csv resp)]
+      (map (partial parse-day header) records))))
+
+
 (defn fetch-historical-data
   "Fetch historical prices from Yahoo! finance for the given symbols between start and end
    example-usage: (fetch-historical-data \"2009-01-01\" \"2009-01-15\" [:AAPL :IBM])"
@@ -50,4 +76,4 @@
              urls (map (partial get-full-url y1 m1 d1 y2 m2 d2 period) (map name syms))
              ;; worth multi-threading since network should be bottle-neck
              responses (pmap fetch-url urls)]
-         (zipmap syms (apply collect-response responses))))))
+         (zipmap syms (map parse-response (apply collect-response responses)))))))
