@@ -11,8 +11,8 @@ yfinance depends on `clj-time` and `clojure.contrib.http.agent`.
 USAGE
 -----
 
-    (use 'in.freegeek.yfinance)
-    (fetch-historical-data "2009-01-01" "2009-01-31" ["AAPL" "IBM" "MSFT" "GOOG"])
+    (:require [in.freegeek.yfinance :as yf])
+    (yf/fetch-historical-data "2009-01-01" "2009-01-31" [:AAPL :IBM :MSFT :GOOG])
 
 FEEDBACK
 --------
