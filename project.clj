@@ -1,4 +1,4 @@
-(defproject org.clojars.tn1ck/yfinance "0.3.0-SNAPSHOT"
+(defproject org.clojars.tn1ck/yfinance "0.4.0-SNAPSHOT"
   :description "Clojure code to access Yahoo! Finance"
   :url "https://github.com/TN1ck/yfinance"
   :author "Baishampayan Ghose"
